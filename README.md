@@ -9,11 +9,11 @@
 
 ## 💡 Apresentação do Grupo
 
-Somos um grupo de alunos comprometidos com a promoção da qualidade na educação, um dos Objetivos de Desenvolvimento Sustentável (ODS) da ONU, especificamente o tema 4. Nosso projeto foca na **análise da taxa de conclusão no ensino superior**.
+Somos alunos dedicados à promoção da educação de qualidade, alinhados ao ODS 4 da ONU. 
 
-Estamos desenvolvendo um modelo de séries temporais para investigar os comportamentos dos alunos matriculados no ensino superior, analisando os percentuais de conclusão e não conclusão ao longo dos anos. Além disso, buscamos identificar as principais causas que impactam negativamente na conclusão dos cursos e prever a probabilidade de alunos com determinadas características não concluírem sua graduação.
+Nosso projeto analisa a taxa de conclusão no ensino superior por meio de um modelo de séries temporais, identificando fatores que influenciam a evasão acadêmica e prevendo casos. 
 
-Ao final do projeto, apresentaremos nossos resultados para avaliação, fortalecendo nossa contribuição para a educação inclusiva e de qualidade.
+Os resultados serão apresentados para avaliação, contribuindo para uma educação mais abrangente e eficiente.
 
 ## ✨ Motivações e justificativa
 
