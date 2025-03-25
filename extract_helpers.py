@@ -1,12 +1,25 @@
 """
 Project: Mais Formandos
-Module: extract_helper
+Module: extract_helpers
+
+This module provides helper functions for extracting, processing, and inserting
+data from CSV files into a SQLite database.
+It includes functions to create mapping tables, add DataFrames to the database,
+extract data from CSV files, insert unique values into normalized tables,
+and process multiple CSV files in a directory.
+
+Functions:
+    create_mapping_table(df: pd.DataFrame, no_col: str, co_col: str, conn: Connection):
+    add_dataframe_to_db(df: pd.DataFrame, table_name: str, conn: Connection):
+    extract_dataframe_from_csv(file_path: str, chunksize: int, usecols=None):
+    insert_unique_values(df, table_name, conn, columns):
+    process_csv_files(directory: str, conn: Connection, usecols: None):
+
 """
 
 import os
 import pandas as pd
 import logging
-
 from sqlite3 import Connection
 
 
@@ -47,8 +60,6 @@ def create_mapping_table(df: pd.DataFrame, no_col: str, co_col: str, conn: Conne
         logging.info(
             f"Mapping table '{mapping_table_name}' updated with {len(mapping_df)} new entries."
         )
-    # else:
-    #     logging.info(f"No new entries to add to mapping table '{mapping_table_name}'.")
 
 
 def add_dataframe_to_db(df: pd.DataFrame, table_name: str, conn: Connection):
@@ -83,9 +94,7 @@ def add_dataframe_to_db(df: pd.DataFrame, table_name: str, conn: Connection):
 
         # Drop NO_ columns from the DataFrame
         df = df.drop(columns=no_columns)
-
         df.to_sql(table_name, conn, if_exists="append", index=False)
-
         logging.info(f"Data inserted into table '{table_name}'")
     except Exception as e:
         logging.error(f"Error inserting data into table '{table_name}': {e}")
@@ -135,11 +144,6 @@ def extract_dataframe_from_csv(file_path: str, chunksize: int, usecols=None):
         chunksize=chunksize,
         dtype=dtype,
     ):
-        # Drop rows with missing values in specific columns
-        # if usecols:
-        # chunk = chunk.dropna(subset=["SG_UF"], how="any", axis=0)
-        # else:
-        #     # Drop rows with missing values in any column
         chunk = chunk.dropna(how="any", axis=0)
         yield chunk
 
@@ -166,6 +170,16 @@ def process_csv_files(directory: str, conn: Connection, usecols: None):
                 for chunk in extract_dataframe_from_csv(
                     file_path, usecols=usecols, chunksize=50000
                 ):
+                    # Convert relevant columns to integers
+                    for col in [
+                        "CO_UF",
+                        "CO_REGIAO",
+                        "CO_MUNICIPIO",
+                        "TP_GRAU_ACADEMICO",
+                    ]:
+                        if col in chunk.columns:
+                            chunk[col] = chunk[col].astype("int32")
+
                     # Insert unique values into normalized tables
                     insert_unique_values(
                         chunk, "regions", conn, ["CO_REGIAO", "NO_REGIAO"]
@@ -188,8 +202,6 @@ def process_csv_files(directory: str, conn: Connection, usecols: None):
                             "TP_ORGANIZACAO_ACADEMICA",
                             "TP_REDE",
                             "TP_CATEGORIA_ADMINISTRATIVA",
-                            "IN_COMUNITARIA",
-                            "IN_CONFESSIONAL",
                         ],
                     )
                     insert_unique_values(
@@ -240,14 +252,10 @@ def process_csv_files(directory: str, conn: Connection, usecols: None):
                         "CO_REGIAO",
                         "CO_UF",
                         "CO_MUNICIPIO",
-                        "IN_CAPITAL",
                         "CO_IES",
                         "CO_CURSO",
                     ]
                     main_table_data = chunk[main_table_columns]
                     main_table_data.to_sql(
-                        "main_table", conn, if_exists="append", index=False
+                        "microdados", conn, if_exists="append", index=False
                     )
-
-                    # if chunk is not None:
-                    #     add_dataframe_to_db(chunk, "MICRODADOS", conn)
