@@ -9,6 +9,14 @@ __pycache__/
 venv/
 env/
 
+# Excel files
+*.xlsx
+
+# Archive folders
+*.zip
+*.tar.gz
+archive/
+
 # Ignore system files
 .DS_Store
 Thumbs.db
