@@ -18,6 +18,34 @@ from extract_config import (
 )
 
 
+def remove_duplicates_from_table(
+    conn: Connection, table_name: str, unique_columns: list[str]
+):
+    """
+    Removes duplicate rows from a table based on unique columns.
+
+    Args:
+        conn (sqlite3.Connection): The SQLite database connection.
+        table_name (str): The name of the table to deduplicate.
+        unique_columns (list): The columns to consider for uniqueness.
+    """
+    try:
+        unique_columns_str = ", ".join(unique_columns)
+        query = f"""
+        DELETE FROM {table_name}
+        WHERE rowid NOT IN (
+            SELECT MIN(rowid)
+            FROM {table_name}
+            GROUP BY {unique_columns_str}
+        )
+        """
+        conn.execute(query)
+        conn.commit()
+        logging.info(f"Removed duplicates from table '{table_name}'")
+    except Exception as e:
+        logging.error(f"Error removing duplicates from table '{table_name}': {e}")
+
+
 def extract_dataframe_from_csv(
     file_path: str, chunksize: int = DEFAULT_CHUNK_SIZE, usecols=None
 ):
@@ -141,3 +169,8 @@ def process_csv_files(directory: str, conn: Connection, chunksize=DEFAULT_CHUNK_
             logging.error(f"Error processing file {file_path.name}: {e}")
 
     logging.info(f"Total rows processed: {total_rows_processed}")
+
+    # Deduplicate tables
+    remove_duplicates_from_table(conn, "microdados", MAIN_TABLE_COLUMNS)
+    for table_name, columns in TABLE_MAPPINGS.items():
+        remove_duplicates_from_table(conn, table_name, columns)
