@@ -5,11 +5,13 @@ Module: extract_microdados
 This module handles the extraction and processing of microdata from the INEP Censo da Educação Superior.
 """
 
-import sqlite3
-import logging
-from pathlib import Path
-from logging.handlers import RotatingFileHandler
 import argparse
+import logging
+import sqlite3
+import sys
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+
 from extract_helpers import process_csv_files
 
 # Constants
@@ -71,4 +73,4 @@ if __name__ == "__main__":
         print("End of loading")
     except Exception as e:
         logging.critical(f"Critical error: {e}")
-        exit(1)
+        sys.exit(1)

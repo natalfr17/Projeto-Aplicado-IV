@@ -6,16 +6,14 @@ This module provides helper functions for extracting, processing, and inserting
 data from CSV files into a SQLite database.
 """
 
-import pandas as pd
-from pathlib import Path
 import logging
+from pathlib import Path
 from sqlite3 import Connection
-from extract_config import (
-    SELECTED_COLUMNS,
-    MAIN_TABLE_COLUMNS,
-    DEFAULT_CHUNK_SIZE,
-    TABLE_MAPPINGS,
-)
+
+import pandas as pd
+
+from extract_config import (DEFAULT_CHUNK_SIZE, MAIN_TABLE_COLUMNS,
+                            SELECTED_COLUMNS, TABLE_MAPPINGS)
 
 
 def remove_duplicates_from_table(
