@@ -95,7 +95,17 @@ def extract_dataframe_from_csv(
         chunksize=chunksize,
         dtype=dtype,
     ):
-        yield chunk.dropna(how="any", axis=0)
+        chunk = chunk.dropna(how="any", axis=0)
+        # Convert relevant columns to integers, handling NaN values
+        for col in [
+            "CO_UF",
+            "CO_REGIAO",
+            "CO_MUNICIPIO",
+            "TP_GRAU_ACADEMICO",
+        ]:
+            if col in chunk.columns:
+                chunk[col] = chunk[col].astype(int)
+        yield chunk
 
 
 def insert_unique_values(
@@ -140,24 +150,18 @@ def process_csv_files(directory: str, conn: Connection, chunksize=DEFAULT_CHUNK_
             for chunk in extract_dataframe_from_csv(
                 file_path, usecols=SELECTED_COLUMNS, chunksize=chunksize
             ):
-                # Convert relevant columns to integers, handling NaN values
-                for col in [
-                    "CO_UF",
-                    "CO_REGIAO",
-                    "CO_MUNICIPIO",
-                    "TP_GRAU_ACADEMICO",
-                ]:
-                    if col in chunk.columns:
-                        chunk[col] = chunk[col].astype(int)
-
+                # Dynamically add QT_ columns to MAIN_TABLE_COLUMNS
+                qt_columns = [col for col in chunk.columns if col.startswith("QT_")]
+                all_main_table_columns = MAIN_TABLE_COLUMNS + qt_columns
+                
                 # Insert unique values into normalized tables
                 for table_name, columns in TABLE_MAPPINGS.items():
                     if all(col in chunk.columns for col in columns):
                         insert_unique_values(chunk, table_name, conn, columns)
 
                 # Insert data into the main table
-                if all(col in chunk.columns for col in MAIN_TABLE_COLUMNS):
-                    main_table_data = chunk[MAIN_TABLE_COLUMNS]
+                if all(col in chunk.columns for col in all_main_table_columns):
+                    main_table_data = chunk[all_main_table_columns]
                     main_table_data.to_sql(
                         "microdados", conn, if_exists="append", index=False
                     )
@@ -165,7 +169,7 @@ def process_csv_files(directory: str, conn: Connection, chunksize=DEFAULT_CHUNK_
                 # Log the number of rows processed in the current chunk
                 rows_in_chunk = len(chunk)
                 total_rows_processed += rows_in_chunk
-                logging.debug(
+                logging.info(
                     f"Inserted {rows_in_chunk} rows from {file_path.name} into 'microdados' table."
                 )
 
