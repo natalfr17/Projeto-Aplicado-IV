@@ -1,3 +1,12 @@
+"""
+Project: Mais Formandos
+Module: extract_config 
+
+This module defines the configuration settings and constants used during the
+data extraction process. It includes the list of selected columns to be read
+from the input CSV files and other relevant settings.
+"""
+
 # Define the subset of columns to read
 SELECTED_COLUMNS = [
     "NU_ANO_CENSO",  # Ano de referência do Censo da Educação Superior

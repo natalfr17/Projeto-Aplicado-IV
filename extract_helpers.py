@@ -7,13 +7,18 @@ data from CSV files into a SQLite database.
 """
 
 import logging
+import traceback
 from pathlib import Path
 from sqlite3 import Connection
 
 import pandas as pd
 
-from extract_config import (DEFAULT_CHUNK_SIZE, MAIN_TABLE_COLUMNS,
-                            SELECTED_COLUMNS, TABLE_MAPPINGS)
+from extract_config import (
+    DEFAULT_CHUNK_SIZE,
+    MAIN_TABLE_COLUMNS,
+    SELECTED_COLUMNS,
+    TABLE_MAPPINGS,
+)
 
 
 def remove_duplicates_from_table(
@@ -118,19 +123,18 @@ def process_csv_files(directory: str, conn: Connection, chunksize=DEFAULT_CHUNK_
         conn (sqlite3.Connection): The SQLite database connection.
         chunksize (int): Number of rows to process per chunk.
     """
+    logging.info("Starting CSV file processing.")
+    # Track total rows processed
+    total_rows_processed = 0
 
     directory = Path(directory)
     if not directory.exists():
         logging.error(f"Directory does not exist: {directory}")
         return
 
-    # Track total rows processed
-    total_rows_processed = 0
-
     # Recursively find all CSV files
     for file_path in directory.rglob("*.csv"):
-        logging.info(f"Reading file: {file_path.name}")
-
+        logging.info(f"Starting processing for file: {file_path.name}")
         try:
             # Process the file in chunks
             for chunk in extract_dataframe_from_csv(
@@ -161,10 +165,15 @@ def process_csv_files(directory: str, conn: Connection, chunksize=DEFAULT_CHUNK_
                 # Log the number of rows processed in the current chunk
                 rows_in_chunk = len(chunk)
                 total_rows_processed += rows_in_chunk
-                logging.info(f"Processed {rows_in_chunk} rows from {file_path.name}")
+                logging.debug(
+                    f"Inserted {rows_in_chunk} rows from {file_path.name} into 'microdados' table."
+                )
 
         except Exception as e:
             logging.error(f"Error processing file {file_path.name}: {e}")
+            logging.debug(traceback.format_exc())
+        else:
+            logging.info(f"Finished processing file: {file_path.name}")
 
     logging.info(f"Total rows processed: {total_rows_processed}")
 
@@ -172,3 +181,5 @@ def process_csv_files(directory: str, conn: Connection, chunksize=DEFAULT_CHUNK_
     remove_duplicates_from_table(conn, "microdados", MAIN_TABLE_COLUMNS)
     for table_name, columns in TABLE_MAPPINGS.items():
         remove_duplicates_from_table(conn, table_name, columns)
+
+    logging.info("CSV file processing completed.")
