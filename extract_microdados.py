@@ -56,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--start_year",
         type=int,
-        default=2023,
+        default=2010,
         help="Starting year for processing files",
     )
     parser.add_argument(

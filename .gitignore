@@ -30,3 +30,6 @@ Thumbs.db
 
 # Ignore zip files
 *.zip
+
+# Ignore csv files
+*.csv
