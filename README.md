@@ -24,3 +24,5 @@ O projeto visa melhorar a educação e aumentar as taxas de conclusão, oferecen
 ## 🔍 Objetivo do Projeto
 
 Desenvolver um modelo de séries temporais para analisar a taxa de conclusão no ensino superior, identificar fatores de evasão e prever casos, permitindo intervenções mais assertivas.
+
+A base de dados se encontra no [drive](https://drive.google.com/file/d/1gp423OWHG44x4nRG2XBMQPvIhJBsHFSa/view?usp=sharing).
